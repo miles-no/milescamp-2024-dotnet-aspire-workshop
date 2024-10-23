@@ -251,4 +251,4 @@ Now that our Keycloak instance is setup as an IdP, we can configure the web site
 
     ![Browser developer tools in Edge showing the trace of network requests that occur when signing-in to the site](./img/browser-dev-tools-network-signin-flow.png)
 
-    You can read more about the authentication flow occurring here in the [Keycloak documentation](https://www.keycloak.org/docs/latest/securing_apps/#authorization-code).
+    You can read more about the authentication flow occurring here in the [Keycloak documentation](https://www.keycloak.org/securing-apps/oidc-layers#_supported_grant_types).
