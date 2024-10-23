@@ -95,7 +95,7 @@ You can read more about [selecting an identity management solution for ASP.NET C
     ```csharp
     var webApp = builder.AddProject<WebApp>("webapp")
         .WithReference(catalogApi)
-        .WithReference(idp);
+        .WithReference(idp, env: "Identity__ClientSecret");
     ```
 
 1. Launch the AppHost project again and use the dashboard to verify that the address of the `idp` resource was injected into the `webapp` resource via environment variables:
