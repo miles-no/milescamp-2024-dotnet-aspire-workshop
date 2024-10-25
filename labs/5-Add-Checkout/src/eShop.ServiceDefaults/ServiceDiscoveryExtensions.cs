@@ -8,8 +8,7 @@ public static class ServiceDiscoveryExtensions
         var endpoints = await resolver.GetEndpointsAsync(serviceName, cancellationToken);
         if (endpoints.Endpoints.Count > 0)
         {
-            var address = endpoints.Endpoints[0].ToString();
-            return $"{scheme}://{address}";
+            return endpoints.Endpoints[0].ToString();
         }
         return null;
     }

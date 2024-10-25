@@ -25,11 +25,11 @@ Now that we've verified the Ordering database is working, let's add an HTTP API 
     - Enable OpenAPI support: **enabled**
     - Do not use top-level statements: **disabled**
     - Use controllers: **disabled**
-    - Enlist in .NET Aspire orchestration: **enabled**
 
     ![VS Web API project template options](./img/vs-web-api-template-options.png)
 
-1. In the newly created project, update the package reference to `Swashbuckle.AspNetCore` to version `6.5.0`
+1. In the newly created project, update the package reference to `Swashbuckle.AspNetCore` to version `6.7.0`
+1. Add the Ordering.API project reference to the `eShop.AppHost` project
 1. Open the `Program.cs` file of the `eShop.AppHost` project, and update it so the API project you just added is named `"ordering-api"` and has a reference to the `OrderingDB` and the IdP:
 
     ```csharp
@@ -41,17 +41,24 @@ Now that we've verified the Ordering database is working, let's add an HTTP API 
 1. Towards the bottom of the `Program.cs` file, udpate the line that adds the `"ORDERINGAPI_HTTP"` envionment variable to the `idp` resource so that it now passes in the `http` endpoint from the `orderingApi` resource. This will ensure the IdP is configured correctly to support authentication requests from the `Ordering.API` project:
 
     ```csharp
-    idp.WithEnvironment("ORDERINGAPI_HTTP", orderingApi.GetEndpoint("http"));
+    var orderingApiHttp = orderingApi.GetEndpoint("http");
+    idp.WithEnvironment("ORDERINGAPI_HTTP", () => $"{orderingApiHttp.Scheme}://{orderingApiHttp.Host}:{orderingApiHttp.Port}");
     ```
 
 1. Add a project reference from the `Ordering.API` project to the `Ordering.Data` project so that it can use Entity Framework Core to access the database.
+1. Add a project reference from the `Ordering.API` project to the `eShop.ServiceDefaults` project so that it can use the service defaults of .NET Aspire
 1. Open the `Program.cs` file of the `Ordering.API` project and delete the sample code that defines the weather forecasts API.
-1. Immediately after the line that calls `builder.AddServiceDefaults()`, add lines to register the default OpenAPI services, and the default authentication services. Reminder, these methods are defined in the `eShop.ServiceDefaults` project and make it easy to add common services to an API project and ensure they're configured consistently:
+1. Immediately after the line that calls `builder.Services.AddSwaggerGen();`, add lines to register the default OpenAPI services, and the default authentication services. Reminder, these methods are defined in the `eShop.ServiceDefaults` project and make it easy to add common services to an API project and ensure they're configured consistently:
 
     ```csharp
     builder.AddServiceDefaults();
     builder.AddDefaultOpenApi();
     builder.AddDefaultAuthentication();
+    ```
+ 1. Immediately after the line that calls `var app = builder.Build();`, add a line to map default endpoints for service discovery
+    
+    ```csharp
+    app.MapDefaultEndpoints();
     ```
 
 1. Add a line to configure the `OrderingDbContext` in the application's DI container using the [**Npgsql Entity Framework Core Provider**](https://www.npgsql.org/efcore/index.html) for PostgreSQL. Ensure that the name passed to the method matches the name defined for the database in the AppHost project's `Program.cs` file (`"OrderingDB"`). The `AddNpgsqlDbContext` method comes from the [`Aspire.Npgsql.EntityFrameworkCore.PostgreSQL` Aspire component](https://learn.microsoft.com/dotnet/aspire/database/postgresql-entity-framework-component):
